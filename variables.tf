@@ -18,6 +18,12 @@ variable "lb_instance_type" {
   default     = "t2.micro"
 }
 
+variable "jboss_count" {
+  description = "number of JBoss nodes"
+  type        = number
+  default     = 2
+}
+
 variable "jboss_instance_type" {
   description = "EC2 instance type of the JBoss nodes"
   default     = "t2.micro"

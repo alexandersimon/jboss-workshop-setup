@@ -129,7 +129,7 @@ resource "aws_instance" "lb" {
 }
 
 resource "aws_instance" "jboss" {
-  count = 2
+  count = var.jboss_count
 
   ami                         = data.aws_ami.ubuntu.id
   instance_type               = var.jboss_instance_type
