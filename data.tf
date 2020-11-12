@@ -12,3 +12,22 @@ data "aws_ami" "ubuntu" {
     values = [ "hvm" ]
   }
 }
+
+data "aws_ami" "centos7" {
+  owners      = [ "057448758665" ]
+  most_recent = true
+
+  filter {
+    name   = "name"
+    values = [ "CentOS 7.7.1908 x86_64 with cloud-init*" ]
+  }
+
+  filter {
+    name   = "virtualization-type"
+    values = [ "hvm" ]
+  }
+}
+
+data "aws_vpc" "selected" {
+  id = var.vpc_id
+}

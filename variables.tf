@@ -3,33 +3,50 @@ variable "aws_region" {
   default     = "eu-central-1"
 }
 
-variable "aws_profile" {
-  description = "name of the AWS profile to use"
-  default     = ""
+variable "aws_az" {
+  description = "AWS availability zone to create the instances in"
+  default     = "eu-central-1b"
 }
 
-variable "cicd_instance_type" {
-  description = "EC2 instance type of the CI/CD node"
+variable "ami_id_centos7" {
+  description = "CentOS 7 AMI id"
+  default     = "ami-0e8286b71b81c3cc1"
+}
+
+variable "vpc_id" {
+  default = "vpc-95679afc"
+}
+
+variable "instance_type" {
+  description = "EC2 instance type"
   default     = "t2.micro"
 }
 
-variable "lb_instance_type" {
-  description = "EC2 instance type of the load balancer node"
-  default     = "t2.micro"
+variable "instance_names" {
+  description = "list of instances to spin up"
+  type        = list(string)
+  default     = [
+    "cicd",
+    "lb",
+    "jboss-0",
+    "jboss-1",
+    "mon"
+  ]
 }
 
-variable "jboss_count" {
-  description = "number of JBoss nodes"
-  type        = number
-  default     = 2
-}
-
-variable "jboss_instance_type" {
-  description = "EC2 instance type of the JBoss nodes"
-  default     = "t2.micro"
-}
-
-variable "mon_instance_type" {
-  description = "EC2 instance type of the monitoring node"
-  default     = "t2.micro"
+variable "ingress_ports" {
+  description = "list of open ingress ports"
+  type        = list(number)
+  default     = [
+    22,
+    8080,
+    8443,
+    9990,
+    9993,
+    80,
+    9092,
+    2181,
+    2888,
+    3888
+  ]
 }

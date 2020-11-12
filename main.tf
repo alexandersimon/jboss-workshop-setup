@@ -8,7 +8,7 @@ resource "tls_private_key" "key" {
 }
 
 resource "aws_key_pair" "ssh-access" {
-  key_name   = "tld-keypair-${terraform.workspace}"
+  key_name   = "${terraform.workspace}-keypair"
   public_key = tls_private_key.key.public_key_openssh
 }
 
@@ -18,15 +18,20 @@ resource "aws_key_pair" "ssh-access" {
 #####
 
 resource "aws_security_group" "default-access" {
-  name = "default-access-${terraform.workspace}"
+  name = "${terraform.workspace}-default-access"
+    vpc_id = data.aws_vpc.selected.id
 
-  ingress {
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
+  dynamic "ingress" {
+    for_each = var.ingress_ports
+
+    content {
+      from_port   = ingress.value
+      to_port     = ingress.value
+      protocol    = "tcp"
+      cidr_blocks = [
+        "0.0.0.0/0"
+      ]
+    }
   }
 
   egress {
@@ -39,125 +44,25 @@ resource "aws_security_group" "default-access" {
   }
 }
 
-resource "aws_security_group" "cicd" {
-  name = "cicd-${terraform.workspace}"
-
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-  }
-}
-
-resource "aws_security_group" "lb" {
-  name = "lb-${terraform.workspace}"
-
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-  }
-}
-
-resource "aws_security_group" "jboss" {
-  name = "jboss-${terraform.workspace}"
-
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-  }
-}
-
-resource "aws_security_group" "mon" {
-  name = "mon-${terraform.workspace}"
-
-  ingress {
-    from_port   = 8080
-    to_port     = 8080
-    protocol    = "tcp"
-    cidr_blocks = [
-      "0.0.0.0/0"
-    ]
-  }
-}
-
 
 #####
 # spin up all required EC2 instances
 #####
 
-resource "aws_instance" "cicd" {
-  ami                         = data.aws_ami.ubuntu.id
-  instance_type               = var.cicd_instance_type
+resource "aws_instance" "server" {
+  count = length(var.instance_names)
+
+  ami                         = data.aws_ami.centos7.id
+  instance_type               = var.instance_type
+  availability_zone           = var.aws_az
   key_name                    = aws_key_pair.ssh-access.key_name
   associate_public_ip_address = true
 
   security_groups = [
-    aws_security_group.default-access.name,
-    aws_security_group.cicd.name
+    aws_security_group.default-access.name
   ]
 
   tags = {
-    Name = "cicd-${terraform.workspace}"
-  }
-}
-
-resource "aws_instance" "lb" {
-  ami                         = data.aws_ami.ubuntu.id
-  instance_type               = var.lb_instance_type
-  key_name                    = aws_key_pair.ssh-access.key_name
-  associate_public_ip_address = true
-
-  security_groups = [
-    aws_security_group.default-access.name,
-    aws_security_group.lb.name
-  ]
-
-  tags = {
-    Name = "lb-${terraform.workspace}"
-  }
-}
-
-resource "aws_instance" "jboss" {
-  count = var.jboss_count
-
-  ami                         = data.aws_ami.ubuntu.id
-  instance_type               = var.jboss_instance_type
-  key_name                    = aws_key_pair.ssh-access.key_name
-  associate_public_ip_address = true
-
-  security_groups = [
-    aws_security_group.default-access.name,
-    aws_security_group.jboss.name
-  ]
-
-  tags = {
-    Name = "jboss-${count.index}-${terraform.workspace}"
-  }
-}
-
-resource "aws_instance" "mon" {
-  ami                         = data.aws_ami.ubuntu.id
-  instance_type               = var.mon_instance_type
-  key_name                    = aws_key_pair.ssh-access.key_name
-  associate_public_ip_address = true
-
-  security_groups = [
-    aws_security_group.default-access.name,
-    aws_security_group.mon.name
-  ]
-
-  tags = {
-    Name = "mon-${terraform.workspace}"
+    Name = "${terraform.workspace}-${var.instance_names[count.index]}"
   }
 }

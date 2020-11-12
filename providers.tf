@@ -3,10 +3,10 @@ terraform {
 
   required_providers {
     aws = "~> 2.70"
+    tls = "~> 3.0"
   }
 }
 
 provider "aws" {
   region  = var.aws_region
-  profile = var.aws_profile
 }

@@ -1,34 +1,22 @@
-output "ssh-key-pem-public" {
+output "ssh-public-key" {
   value     = tls_private_key.key.public_key_pem
   sensitive = true
 }
 
-output "ssh-key-pem" {
+output "ssh-private-key" {
   value     = tls_private_key.key.private_key_pem
   sensitive = true
 }
 
-output "ssh-key-public-openssh" {
+output "ssh-public-key-openssh" {
   value     = tls_private_key.key.public_key_openssh
   sensitive = true
 }
 
-output "dns-cicd" {
-  value = aws_instance.cicd.public_dns
+output "private-ips" {
+  value = { for inst in aws_instance.server : inst.tags["Name"] => inst.private_ip }
 }
 
-output "dns-lb" {
-  value = aws_instance.lb.public_dns
-}
-
-output "dns-jboss-0" {
-  value = aws_instance.jboss.0.public_dns
-}
-
-output "dns-jboss-1" {
-  value = aws_instance.jboss.1.public_dns
-}
-
-output "dns-mon" {
-  value = aws_instance.mon.public_dns
+output "public-dns" {
+  value = { for inst in aws_instance.server : inst.tags["Name"] => inst.public_dns }
 }
