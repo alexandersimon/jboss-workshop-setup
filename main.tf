@@ -52,7 +52,7 @@ resource "aws_security_group" "default-access" {
 resource "aws_instance" "server" {
   count = length(var.instance_names)
 
-  ami                         = data.aws_ami.centos7.id
+  ami                         = var.ami_id_centos7
   instance_type               = var.instance_type
   availability_zone           = var.aws_az
   key_name                    = aws_key_pair.ssh-access.key_name
